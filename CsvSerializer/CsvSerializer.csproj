@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Adrichem.Serialization.CsvSerializer</RootNamespace>
+    <PackageId>Adrichem.Serialization.CsvSerializer</PackageId>
+    <Authors>Gerben van Adrichem</Authors>
+    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <Description>Serialize and deserialize .csv files.</Description>
+    <PackageProjectUrl>https://github.com/adrichem/CsvSerializer</PackageProjectUrl>
+    <PackageTags>csv serialize deserialize Excel</PackageTags>
+    <RepositoryUrl>https://github.com/adrichem/CsvSerializer</RepositoryUrl>
   </PropertyGroup>
 
 </Project>
