@@ -141,7 +141,7 @@ namespace TestCsvSerializer
             Output.Seek(0, 0);
 
             var Actual = new StreamReader(Output).ReadToEnd();
-            string Expected = "sep=;(\r\n|\n)Double;Float;Date(\r\n|\n)1,1;2,2;23-12-2018 00:00:00";
+            string Expected = "sep=;(\r\n|\n)Double;Float;Date(\r\n|\n)1,1;2,2;23-12-2018";
             Assert.Matches(Expected, Actual);
 
 
@@ -156,7 +156,7 @@ namespace TestCsvSerializer
             Output.Seek(0, 0);
 
             Actual = new StreamReader(Output).ReadToEnd();
-            Expected = "sep=;(\r\n|\n)Double;Float;Date(\r\n|\n)1.1;2.2;12/23/2018 12:00:00 AM";
+            Expected = "sep=;(\r\n|\n)Double;Float;Date(\r\n|\n)1.1;2.2;12-23-2018";
             Assert.Matches(Expected, Actual);
         }
 

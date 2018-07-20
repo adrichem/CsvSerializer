@@ -321,12 +321,10 @@
         ///     Serializes an object, or graph of objects with the given root to the provided stream.
         /// </summary>
         /// <param name="stream">
-        ///     The stream where the formatter puts the serialized data. This stream can reference a variety of
-        ///     backing stores (such as files, network, memory, and so on).
+        ///     The output stream to searialize to.
         /// </param>
         /// <param name="graph">
-        ///     The object, or root of the object graph, to serialize as List of type T. All child objects of this
-        ///     root object are automatically serialized.
+        ///     The object, or root of the object graph, to serialize as IEnumerable of type T. 
         /// </param>
         public void Serialize(Stream stream, object graph)
         {
@@ -368,28 +366,13 @@
 
                 foreach (var p in _properties)
                 {
-                    object raw;
-                    if (p.Name == "Double")
-                    {
-                        raw = ( (double)p.GetValue(item)).ToString(Culture);
-                    }
-                    else if (p.Name == "Float")
-                    {
-                        raw = ((float)p.GetValue(item)).ToString(Culture);
-                    }
-                    else if (p.Name == "Date")
-                    {
-                        raw = ((DateTime)p.GetValue(item)).ToString(Culture);
-                    }
-                    else
-                    {
-                        raw = p.GetValue(item);
-                    }
+                    var converter = TypeDescriptor.GetConverter(p.PropertyType);
+                    var convertedvalue = converter.ConvertToString(null, Culture, p.GetValue(item));
+                       
 
-                    
-                    var value = raw == null
+                    var value = convertedvalue == null
                         ? ""
-                        : raw.ToString()
+                        : convertedvalue
                             .Replace(Separator.ToString(), Replacement)
                             .Replace(Environment.NewLine, NewlineReplacement);
 
