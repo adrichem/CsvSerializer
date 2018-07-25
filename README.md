@@ -2,11 +2,11 @@
 # Serialize and deserialize .csv files
 
 Based on the version from https://gist.github.com/caschw/ddac05f58f1f081bd9da with the following changes:
-
+1. Support fields aswel as properties
 1. Serializing no longer disposes the output stream.
 1. Serialize any object that implements  ```IEnumerable<T>```. It doesn't have to be a ```IList<T>```
 1. Serialization of headers can be omitted by setting the ```UseHeader``` property.
-1. Serialization and Deserialization support culture specific formatting through the ```Culture``` property. The default is ```en-us```
+1. Serialization and Deserialization support culture specific formatting through the ```Culture``` property. It defaults to the current culture of the thread.
 1. Throws ```InvalidCsvFormatException``` instead of ```IndexOutOfRangeException``` when a line in the csv input has too many fields.
 
 

@@ -1,4 +1,4 @@
-﻿namespace TestCsvSerializer
+﻿namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
 {
     public class HasProperties
     {

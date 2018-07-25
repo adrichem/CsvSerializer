@@ -1,11 +1,10 @@
-﻿namespace TestCsvSerializer
+﻿namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
 {
     using System;
-    public class HasLocalizable
+    public class HasLocalizableFields
     {
-        public double Double { get; set; }
-        public float Float { get; set; }
-        public DateTime Date { get; set; }
-
+        public double Double;
+        public float Float;
+        public DateTime Date;
     }
 }

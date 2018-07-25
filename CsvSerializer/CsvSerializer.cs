@@ -12,118 +12,29 @@
 
 
     /// <summary>
-    ///     Serialize and Deserialize Lists of any object type to CSV.
+    ///     Serialize and Deserialize Enumerables of any object type to CSV.
     /// </summary>
     public class CsvSerializer<T> : IFormatter where T : class, new()
     {
         #region Fields
-
-        private readonly List<PropertyInfo> _properties;
-
-        private bool _ignoreEmptyLines = true;
-
-        private bool _ignoreReferenceTypesExceptString = true;
-
-        private string _newlineReplacement = ((char)0x254).ToString();
-
-        private string _replacement = ((char)0x255).ToString();
-
-        private string _rowNumberColumnTitle = "RowNumber";
-
-        private char _separator = ',';
-
-        private bool _useLineNumbers = true;
-
+        private IList<MemberInfo> Members;
         #endregion
 
         #region Properties
 
-        public bool IgnoreEmptyLines
-        {
-            get
-            {
-                return _ignoreEmptyLines;
-            }
-            set
-            {
-                _ignoreEmptyLines = value;
-            }
-        }
+        public bool IgnoreEmptyLines { get; set; } = true;
 
-        public bool IgnoreReferenceTypesExceptString
-        {
-            get
-            {
-                return _ignoreReferenceTypesExceptString;
-            }
-            set
-            {
-                _ignoreReferenceTypesExceptString = value;
-            }
-        }
+        public bool IgnoreReferenceTypesExceptString { get; set; } = true;
 
-        public string NewlineReplacement
-        {
-            get
-            {
-                return _newlineReplacement;
-            }
-            set
-            {
-                _newlineReplacement = value;
-            }
-        }
+        public string NewlineReplacement { get; set; } = ((char)0x254).ToString();
+        public string Replacement { get; set; } = ((char)0x255).ToString();
 
-        public string Replacement
-        {
-            get
-            {
-                return _replacement;
-            }
-            set
-            {
-                _replacement = value;
-            }
-        }
+        public string RowNumberColumnTitle { get; set; } = "RowNumber";
 
-        public string RowNumberColumnTitle
-        {
-            get
-            {
-                return _rowNumberColumnTitle;
-            }
-            set
-            {
-                _rowNumberColumnTitle = value;
-            }
-        }
-
-        public char Separator
-        {
-            get
-            {
-                return _separator;
-            }
-            set
-            {
-                _separator = value;
-            }
-        }
-
+        public char Separator { get; set; } = ',';
         public bool UseEofLiteral { get; set; }
 
-        public bool UseLineNumbers
-        {
-            get
-            {
-                return _useLineNumbers;
-            }
-            set
-            {
-                _useLineNumbers = value;
-            }
-        }
-
+        public bool UseLineNumbers { get; set; } = true;
         public bool UseTextQualifier { get; set; }
 
         public bool UseHeader { get; set; }
@@ -151,20 +62,31 @@
 
             var type = typeof(T);
 
-            var properties =
-                type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty
-                                   | BindingFlags.SetProperty);
+            var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetField | BindingFlags.SetField).ToList<MemberInfo>();
+            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.SetProperty).ToList<MemberInfo>();
 
-            var q = properties.AsQueryable();
+            Members = fields.Union(properties).Where(m => m.GetCustomAttribute<CsvIgnoreAttribute>() == null).ToList();
 
             if (IgnoreReferenceTypesExceptString)
             {
-                q = q.Where(a => a.PropertyType.IsValueType || a.PropertyType.Name == "String");
+                Members = Members.Where( a => 
+                    {
+                        if (a is PropertyInfo &&  ((a as PropertyInfo).PropertyType.IsValueType || (a as PropertyInfo).PropertyType.Name == "String"))
+                        {
+                            return true;
+                        }
+                        else if (a is FieldInfo && ((a as FieldInfo).FieldType.IsValueType || (a as FieldInfo).FieldType.Name == "String"))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    } )
+                    .ToList();
             }
-
-            var r = from a in q where a.GetCustomAttribute<CsvIgnoreAttribute>() == null select a;
-
-            _properties = r.ToList();
+         
         }
 
         #endregion
@@ -272,7 +194,7 @@
 
                     // continue of deviant RowNumber column condition
                     // this allows for the deserializer to implicitly ignore the RowNumber column
-                    if (column.Equals(RowNumberColumnTitle) && !_properties.Any(a => a.Name.Equals(RowNumberColumnTitle)))
+                    if (column.Equals(RowNumberColumnTitle) && !Members.Any(a => a.Name.Equals(RowNumberColumnTitle)))
                     {
                         continue;
                     }
@@ -283,7 +205,7 @@
                             .Trim();
 
                     var p =
-                        _properties.FirstOrDefault(
+                        Members.FirstOrDefault(
                             a => a.Name.Equals(column, StringComparison.InvariantCultureIgnoreCase));
 
                     // ignore property csv column, Property not found on targing type
@@ -305,10 +227,19 @@
                         }
                     }
 
-                    var converter = TypeDescriptor.GetConverter(p.PropertyType);
-                    var convertedvalue = converter.ConvertFromString(null, Culture, value);
-
-                    p.SetValue(datum, convertedvalue);
+                    if (p is PropertyInfo)
+                    {
+                        
+                        var converter = TypeDescriptor.GetConverter((p as PropertyInfo).PropertyType);
+                        var convertedvalue = converter.ConvertFromString(null, Culture, value);
+                        (p as PropertyInfo).SetValue(datum, convertedvalue);
+                    } 
+                    else if ( p is FieldInfo)
+                    {
+                        var converter = TypeDescriptor.GetConverter((p as FieldInfo).FieldType);
+                        var convertedvalue = converter.ConvertFromString(null, Culture, value);
+                        (p as FieldInfo).SetValue(datum, convertedvalue);
+                    }
                 }
 
                 data.Add(datum);
@@ -364,10 +295,24 @@
                     values.Add(row++.ToString());
                 }
 
-                foreach (var p in _properties)
+                foreach (var M in Members)
                 {
-                    var converter = TypeDescriptor.GetConverter(p.PropertyType);
-                    var convertedvalue = converter.ConvertToString(null, Culture, p.GetValue(item));
+                    string convertedvalue = null;
+
+                    if (M is PropertyInfo)
+                    {
+                        var converter = TypeDescriptor.GetConverter((M as PropertyInfo).PropertyType);
+                        convertedvalue = converter.ConvertToString(null, Culture, (M as PropertyInfo).GetValue(item));
+                    } 
+                    else if( M is FieldInfo)
+                    {
+                        var converter = TypeDescriptor.GetConverter((M as FieldInfo).FieldType);
+                        convertedvalue = converter.ConvertToString(null, Culture, (M as FieldInfo).GetValue(item));
+                    }
+                    else
+                    {
+                        continue;
+                    }
                        
 
                     var value = convertedvalue == null
@@ -417,12 +362,12 @@
         private string GetHeader()
         {
             var csvDisplayHeaderAttributes = new List<CsvDisplayHeaderAttribute>();
-            foreach (var property in _properties)
+            foreach (var Member in Members)
             {
-                var attribute = (CsvDisplayHeaderAttribute)property.GetCustomAttributes(typeof(CsvDisplayHeaderAttribute), false).FirstOrDefault();
+                var attribute = (CsvDisplayHeaderAttribute)Member.GetCustomAttributes(typeof(CsvDisplayHeaderAttribute), false).FirstOrDefault();
                 csvDisplayHeaderAttributes.Add(new CsvDisplayHeaderAttribute
                 {
-                    DisplayName = attribute == null ? property.Name : string.IsNullOrEmpty(attribute.DisplayName) ? property.Name : attribute.DisplayName,
+                    DisplayName = attribute == null ? Member.Name : string.IsNullOrEmpty(attribute.DisplayName) ? Member.Name : attribute.DisplayName,
                     Order = attribute == null ? int.MaxValue : attribute.Order
                 });
 
@@ -439,9 +384,6 @@
 
             return string.Join(Separator.ToString(), header.ToArray());
         }
-
         #endregion
     }
-
-    
 }

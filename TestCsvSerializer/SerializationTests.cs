@@ -1,4 +1,4 @@
-namespace TestCsvSerializer
+namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
 {
     using Xunit;
     using Adrichem.Serialization.CsvSerializer;
@@ -6,7 +6,6 @@ namespace TestCsvSerializer
     using System.IO;
     using System.Globalization;
     using System;
-    using System.Linq;
 
     public class SerializationTests
     {
@@ -160,6 +159,69 @@ namespace TestCsvSerializer
             Assert.Matches(Expected, Actual);
         }
 
+
+        [Fact]
+        public void TestFields()
+        {
+            var Serializer = new CsvSerializer<HasFields>()
+            {
+                UseLineNumbers = false,
+            };
+
+            var Data = new List<HasFields>()
+            {
+                new HasFields { Field1 = "Hello", Field2 = "World", intField = 1, boolField = true}, 
+                new HasFields { Field1 = "Good to", Field2 = "See you", intField = 2, boolField = false},
+            };
+
+            var Output = new MemoryStream();
+            Serializer.Serialize(Output, Data);
+            Output.Seek(0, 0);
+
+            var Actual = new StreamReader(Output).ReadToEnd();
+            string Expected = "Field1,Field2,intField,boolField(\r\n|\n)Hello,World,1,True(\r\n|\n)Good to,See you,2,False";
+            Assert.Matches(Expected, Actual);
+        }
+
+
+        [Fact]
+        public void TestLocalizableFields()
+        {
+            var Serializer = new CsvSerializer<HasLocalizableFields>()
+            {
+                Separator = ';',
+                Culture = CultureInfo.GetCultureInfo("nl-nl")
+
+            };
+
+            var Data = new List<HasLocalizableFields>
+            {
+                new HasLocalizableFields { Double = 1.1, Float=2.2F, Date = new DateTime(2018,12,23)},
+            };
+
+            var Output = new MemoryStream();
+            Serializer.Serialize(Output, Data);
+            Output.Seek(0, 0);
+
+            var Actual = new StreamReader(Output).ReadToEnd();
+            string Expected = "sep=;(\r\n|\n)Double;Float;Date(\r\n|\n)1,1;2,2;23-12-2018";
+            Assert.Matches(Expected, Actual);
+
+
+            Serializer = new CsvSerializer<HasLocalizableFields>()
+            {
+                Separator = ';',
+                Culture = CultureInfo.GetCultureInfo("en-us")
+
+            };
+            Output = new MemoryStream();
+            Serializer.Serialize(Output, Data);
+            Output.Seek(0, 0);
+
+            Actual = new StreamReader(Output).ReadToEnd();
+            Expected = "sep=;(\r\n|\n)Double;Float;Date(\r\n|\n)1.1;2.2;12-23-2018";
+            Assert.Matches(Expected, Actual);
+        }
     }
 
 }
