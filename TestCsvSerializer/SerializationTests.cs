@@ -15,50 +15,43 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
                 new HasProperties { Prop1 = "Good to", Prop2="See you"},
             };
 
-
         [Fact]
-        public void TestAllDisabled()
+        public void TestHeaderDisabled()
         {
-            var Serializer = new CsvSerializer<HasProperties>()
-            {
-                UseHeader=false
-            };
             var Output = new MemoryStream();
-            Serializer.Serialize(Output, PropertyBasedData);
+            CsvSerializer.Serialize(Output, PropertyBasedData, new CsvSerializationOptions
+            {
+                UseHeader = false
+            });
             Output.Seek(0, 0);
 
             var Actual = new StreamReader(Output).ReadToEnd();
-
             string Expected = "Hello,World(\r\n|\n)Good to,See you";
             Assert.Matches(Expected, Actual);
         }
 
         [Fact]
-        public void TestHeaderEnabled()
+        public void TestHeaderEnabledByDefault()
         {
-            var Serializer = new CsvSerializer<HasProperties>()
-            {
-                UseHeader = true
-            };
             var Output = new MemoryStream();
-            Serializer.Serialize(Output, PropertyBasedData);
+            CsvSerializer.Serialize(Output, PropertyBasedData);
             Output.Seek(0, 0);
             var Actual = new StreamReader(Output).ReadToEnd();
             string Expected = "Prop1,Prop2(\r\n|\n)Hello,World(\r\n|\n)Good to,See you";
             Assert.Matches(Expected, Actual);
         }
-
  
         [Fact]
         public void TestQualifierEnabled()
         {
-            var Serializer = new CsvSerializer<HasProperties>()
+
+            var SerializationOptions = new CsvSerializationOptions
             {
                 UseTextQualifier = true,
-                UseHeader = true
             };
+
             var Output = new MemoryStream();
-            Serializer.Serialize(Output, PropertyBasedData);
+            CsvSerializer.Serialize(Output, PropertyBasedData, SerializationOptions);
             Output.Seek(0, 0);
 
             var Actual = new StreamReader(Output).ReadToEnd();
@@ -69,15 +62,16 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
         [Fact]
         public void TestLineNumbersEnabled()
         {
-            var Serializer = new CsvSerializer<HasProperties>()
+
+            var SerializationOptions = new CsvSerializationOptions
             {
-                UseLineNumbers = true,
-                UseHeader = true,
-                RowNumberColumnTitle="#",
+                UseRowNumbers = true,
+                RowNumberColumnTitle = "#",
             };
+
             
             var Output = new MemoryStream();
-            Serializer.Serialize(Output, PropertyBasedData);
+            CsvSerializer.Serialize(Output, PropertyBasedData, SerializationOptions);
             Output.Seek(0, 0);
 
             var Actual = new StreamReader(Output).ReadToEnd();
@@ -86,32 +80,15 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
         }
 
         [Fact]
-        public void TestEOFLiteralEnabled()
-        {
-            var Serializer = new CsvSerializer<HasProperties>()
-            {
-                UseEofLiteral=true
-            };
-
-            var Output = new MemoryStream();
-            Serializer.Serialize(Output, PropertyBasedData);
-            Output.Seek(0, 0);
-
-            var Actual = new StreamReader(Output).ReadToEnd();
-            string Expected = "Prop1,Prop2(\r\n|\n)Hello,World(\r\n|\n)Good to,See you(\r\n|\n)EOF";
-            Assert.Matches(Expected, Actual);
-        }
-
-        [Fact]
         public void TestSeparator()
         {
-            var Serializer = new CsvSerializer<HasProperties>()
+            var SerializationOptions = new CsvSerializationOptions
             {
                 Separator = ';',
             };
 
             var Output = new MemoryStream();
-            Serializer.Serialize(Output, PropertyBasedData);
+            CsvSerializer.Serialize(Output, PropertyBasedData, SerializationOptions);
             Output.Seek(0, 0);
 
             var Actual = new StreamReader(Output).ReadToEnd();
@@ -119,15 +96,13 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
             Assert.Matches(Expected, Actual);
         }
 
-
         [Fact]
         public void TestCulture()
         {
-            var Serializer = new CsvSerializer<HasLocalizable>()
+            var SerializationOptions = new CsvSerializationOptions
             {
-                Separator=';',
+                Separator = ';',
                 Culture = CultureInfo.GetCultureInfo("nl-nl")
-
             };
 
             var Data = new List<HasLocalizable>
@@ -136,7 +111,7 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
             };
 
             var Output = new MemoryStream();
-            Serializer.Serialize(Output, Data);
+            CsvSerializer.Serialize(Output, Data, SerializationOptions);
             Output.Seek(0, 0);
 
             var Actual = new StreamReader(Output).ReadToEnd();
@@ -144,14 +119,10 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
             Assert.Matches(Expected, Actual);
 
 
-            Serializer = new CsvSerializer<HasLocalizable>()
-            {
-                Separator = ';',
-                Culture = CultureInfo.GetCultureInfo("en-us")
 
-            };
+            SerializationOptions.Culture = CultureInfo.GetCultureInfo("en-us");
             Output = new MemoryStream();
-            Serializer.Serialize(Output, Data);
+            CsvSerializer.Serialize(Output, Data, SerializationOptions);
             Output.Seek(0, 0);
 
             Actual = new StreamReader(Output).ReadToEnd();
@@ -159,15 +130,9 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
             Assert.Matches(Expected, Actual);
         }
 
-
         [Fact]
         public void TestFields()
         {
-            var Serializer = new CsvSerializer<HasFields>()
-            {
-                UseLineNumbers = false,
-            };
-
             var Data = new List<HasFields>()
             {
                 new HasFields { Field1 = "Hello", Field2 = "World", intField = 1, boolField = true}, 
@@ -175,7 +140,7 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
             };
 
             var Output = new MemoryStream();
-            Serializer.Serialize(Output, Data);
+            CsvSerializer.Serialize(Output, Data);
             Output.Seek(0, 0);
 
             var Actual = new StreamReader(Output).ReadToEnd();
@@ -183,15 +148,14 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
             Assert.Matches(Expected, Actual);
         }
 
-
         [Fact]
         public void TestLocalizableFields()
         {
-            var Serializer = new CsvSerializer<HasLocalizableFields>()
+
+            var SerializationOptions = new CsvSerializationOptions
             {
                 Separator = ';',
                 Culture = CultureInfo.GetCultureInfo("nl-nl")
-
             };
 
             var Data = new List<HasLocalizableFields>
@@ -200,7 +164,7 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
             };
 
             var Output = new MemoryStream();
-            Serializer.Serialize(Output, Data);
+            CsvSerializer.Serialize(Output, Data, SerializationOptions);
             Output.Seek(0, 0);
 
             var Actual = new StreamReader(Output).ReadToEnd();
@@ -208,19 +172,20 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
             Assert.Matches(Expected, Actual);
 
 
-            Serializer = new CsvSerializer<HasLocalizableFields>()
-            {
-                Separator = ';',
-                Culture = CultureInfo.GetCultureInfo("en-us")
-
-            };
+            SerializationOptions.Culture = CultureInfo.GetCultureInfo("en-us");
             Output = new MemoryStream();
-            Serializer.Serialize(Output, Data);
+            CsvSerializer.Serialize(Output, Data, SerializationOptions);
             Output.Seek(0, 0);
 
             Actual = new StreamReader(Output).ReadToEnd();
             Expected = "sep=;(\r\n|\n)Double;Float;Date(\r\n|\n)1.1;2.2;12-23-2018";
             Assert.Matches(Expected, Actual);
+        }
+
+        [Fact]
+        public void TestInvalidSerializeInvalidObject()
+        {
+             Assert.Throws<ArgumentException>(() => CsvSerializer.Serialize(new MemoryStream(), new HasProperties()));
         }
     }
 

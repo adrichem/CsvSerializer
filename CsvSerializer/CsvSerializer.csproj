@@ -5,11 +5,12 @@
     <RootNamespace>Adrichem.Serialization.CsvSerializer</RootNamespace>
     <PackageId>Adrichem.Serialization.CsvSerializer</PackageId>
     <Authors>Gerben van Adrichem</Authors>
-    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageLicenseUrl>https://github.com/adrichem/CsvSerializer/blob/master/LICENSE</PackageLicenseUrl>
     <Description>Serialize and deserialize .csv files.</Description>
     <PackageProjectUrl>https://github.com/adrichem/CsvSerializer</PackageProjectUrl>
-    <PackageTags>csv serialize deserialize Excel</PackageTags>
+    <PackageTags>csv serialize deserialize excel</PackageTags>
     <RepositoryUrl>https://github.com/adrichem/CsvSerializer</RepositoryUrl>
+    <Version>2.0.0</Version>
   </PropertyGroup>
 
 </Project>

@@ -5,7 +5,12 @@ VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CsvSerializer", "CsvSerializer\CsvSerializer.csproj", "{8FB1A59A-F2B0-4CD8-A4BD-0929917644E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCsvSerializer", "TestCsvSerializer\TestCsvSerializer.csproj", "{5D6899C1-5597-4F83-BD6E-285C4F00F23F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestCsvSerializer", "TestCsvSerializer\TestCsvSerializer.csproj", "{5D6899C1-5597-4F83-BD6E-285C4F00F23F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E8655923-9B33-4904-B4B8-46D8753ABEEC}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
