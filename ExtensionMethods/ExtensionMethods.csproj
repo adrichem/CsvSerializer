@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Adrichem.Serialization.CsvSerializer.ExtensionMethods</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Adrichem.Serialization.CsvSerializer.ExtensionMethods</PackageId>
+    <Authors>Gerben van Adrichem</Authors>
+    <Product>CsvSerializer</Product>
+    <Description>Adds extension methods to IEnumerables for easy serialization.</Description>
+    <PackageLicenseUrl>https://github.com/adrichem/CsvSerializer/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/adrichem/CsvSerializer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/adrichem/CsvSerializer</RepositoryUrl>
+    <PackageTags>csv serialize deserialize excel</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CsvSerializer\CsvSerializer.csproj" />
+  </ItemGroup>
+
+</Project>
