@@ -11,23 +11,22 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
     public class DeserializationTests
     {
 
-        private Stream StringToStream(string csvContent)
+        private StreamReader StringToStreamReader(string csvContent)
         {
             MemoryStream InputStream = new MemoryStream();
             var bytes = Encoding.UTF8.GetBytes(csvContent);
             InputStream.Write(bytes, 0, bytes.Count());
             InputStream.Seek(0, 0);
-            return InputStream;
+            return new StreamReader(InputStream, Encoding.UTF8);
         }
 
         [Fact]
         public void TestIncompleteLine()
         {
-            var Input = StringToStream("Prop1,Prop2" + Environment.NewLine
+            var Input = StringToStreamReader("Prop1,Prop2" + Environment.NewLine
                 + "A" + Environment.NewLine
                 + "C,D");
-
-
+ 
             var Data = CsvSerializer.Deserialize<HasProperties>(Input);
 
             Assert.True(Data.Count() == 2);
@@ -40,7 +39,7 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
         [Fact]
         public void TestTooManyFieldsOnLine()
         {
-            var Input = StringToStream(
+            var Input = StringToStreamReader(
                  "Prop1,Prop1"
                 + Environment.NewLine
                 + "A,B,C,D,E");
@@ -51,7 +50,7 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
         [Fact]
         public void TestEOF()
         {
-            var Input = StringToStream(string.Empty);
+            var Input = StringToStreamReader(string.Empty);
             Assert.ThrowsAny<CsvFormatException>(() => CsvSerializer.Deserialize<HasLocalizable>(Input));
         }
 
@@ -68,7 +67,7 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
                 Separator = ';'
             };
 
-            var Input = StringToStream(ENUSTest);
+            var Input = StringToStreamReader(ENUSTest);
 
             var Data = CsvSerializer.Deserialize<HasLocalizable>(Input, DeserializationOptions);
             Assert.Single(Data);
@@ -79,7 +78,7 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
             Assert.Equal(2018, Data.First().Date.Year);
 
             DeserializationOptions.Culture = CultureInfo.GetCultureInfo("nl-nl");
-            Input = StringToStream(NLNLTest);
+            Input = StringToStreamReader(NLNLTest);
             Data = CsvSerializer.Deserialize<HasLocalizable>(Input, DeserializationOptions);
             Assert.Single(Data);
             Assert.Equal(1, Math.Floor(Data.First().Double));
@@ -98,7 +97,7 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
             tmp += "1,A,B" + Environment.NewLine;
             tmp += "2,C,D" + Environment.NewLine;
 
-            var Input = StringToStream(tmp);
+            var Input = StringToStreamReader(tmp);
 
             var Data = CsvSerializer.Deserialize<HasProperties>(Input, new CsvDeserializationOptions
             {
@@ -120,7 +119,7 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
             tmp += "A,B" + Environment.NewLine;
             tmp += "C,D" + Environment.NewLine;
 
-            var Input = StringToStream(tmp);
+            var Input = StringToStreamReader(tmp);
 
             var Data = CsvSerializer.Deserialize<HasProperties> (Input);
             Assert.True(Data.Count() == 2);
@@ -139,7 +138,7 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
             tmp += "A,B,1,False" + Environment.NewLine;
             tmp += "C,D,2,True" + Environment.NewLine;
 
-            var Input = StringToStream(tmp);
+            var Input = StringToStreamReader(tmp);
 
             var Data = CsvSerializer.Deserialize<HasFields>(Input);
             Assert.True(Data.Count() == 2);
@@ -167,7 +166,7 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
                 Separator = ';'
             };
 
-            var Input = StringToStream(ENUSTest);
+            var Input = StringToStreamReader(ENUSTest);
 
             var Data = CsvSerializer.Deserialize<HasLocalizableFields>(Input, DeserializationOptions);
             Assert.Single(Data);
@@ -179,7 +178,7 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
 
 
             DeserializationOptions.Culture = CultureInfo.GetCultureInfo("nl-nl");
-            Input = StringToStream(NLNLTest);
+            Input = StringToStreamReader(NLNLTest);
             Data = CsvSerializer.Deserialize<HasLocalizableFields>(Input, DeserializationOptions);
             Assert.Single(Data);
             Assert.Equal(1, Math.Floor(Data.First().Double));

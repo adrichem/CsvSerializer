@@ -4,7 +4,7 @@ Inspired by  https://gist.github.com/caschw/ddac05f58f1f081bd9da
 1. Supports fields and properties.
 1. Supports culture specific formatting of values.
 1. Configurable separator, rownumbers
-1. Separate NuGet adds 
+1. Separate NuGet adds extension methods for usage in LINQ pipelines
 
 ## Serialization example
 ```csharp
@@ -16,7 +16,11 @@ var SerializationOptions = new CsvSerializationOptions
 };
 
 var Output = new MemoryStream();
-CsvSerializer.Serialize(Output, Data, SerializationOptions);
+using (var Writer = new StreamWriter(Output, new System.Text.UTF8Encoding(true), 1024, true))
+{
+    CsvSerializer.Serialize(Writer, Data, SerializationOptions);
+}
+
  ```
 ## Deserialization example
 ```csharp
@@ -27,11 +31,13 @@ var DeserializationOptions = new CsvDeserializationOptions
     Culture = CultureInfo.GetCultureInfo("en-us"),
     Separator = ';'
 };
-
-var Data = CsvSerializer.Deserialize<HasLocalizable>(StringToStream(ENUSTest), DeserializationOptions);
+using( var Reader = new StreamReader(getInputStream(ENUSTest), Encoding.UTF8); )
+{
+    var Data = CsvSerializer.Deserialize<HasLocalizable>(Reader, DeserializationOptions);
+}
 ```
 
-## Extension methods example
+## Extension method example
 ```csharp
 //Dont forget to Install NuGet Package Adrichem.Serialization.CsvSerializer.ExtensionMethods
 using Adrichem.Serialization.CsvSerializer.ExtensionMethods;
@@ -42,9 +48,6 @@ var SerializationOptions = new CsvSerializationOptions
     Culture = CultureInfo.GetCultureInfo("nl-nl"),
 };
 
-var AscendingOutput = new FileStream("c:\\temp\\ascending.csv", FileMode.OpenOrCreate);
-var DescendingOutput = new FileStream("c:\\temp\\descending.csv", FileMode.OpenOrCreate);
-
 var Data = new List<MyClass> 
 { 
     new MyClass { Prop1 = "1" , Prop2 = "A"},  
@@ -53,8 +56,8 @@ var Data = new List<MyClass>
 };
 Data
     .OrderBy( item => item.Prop1)
-    .CsvSerialize<MyClass>(AscendingOutput)
+    .CsvSerialize<MyClass>("c:\\temp\\ascending.csv", new System.Text.UTF8Encoding(true))
     .OrderByDescending(item => item.Prop2)
-    .CsvSerialize<MyClass>(DescendingOutput, SerializationOptions)
+    .CsvSerialize<MyClass>("c:\\temp\\descending.csv", new System.Text.UTF8Encoding(true), SerializationOptions)
 ;
  ```

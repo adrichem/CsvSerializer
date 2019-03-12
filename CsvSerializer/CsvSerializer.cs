@@ -17,22 +17,22 @@
         /// <summary>
         ///     Serializes to a CSV using default serialization options.
         /// </summary>
-        /// <param name="Output">
-        ///     The output stream to serialize to.
+        /// <param name="Writer">
+        ///     The writer to serialize to.
         /// </param>
         /// <param name="objects">
         ///     An IEnumerable of objects. 
         /// </param>
-        public static void Serialize(Stream Output, object objects)
+        public static void Serialize(StreamWriter Writer, object objects)
         {
-            Serialize(Output, objects, new CsvSerializationOptions());
+            Serialize(Writer, objects, new CsvSerializationOptions());
         }
 
         /// <summary>
         ///     Serializes to a CSV.
         /// </summary>
-        /// <param name="Output">
-        ///     The output stream to serialize to.
+        /// <param name="Writer">
+        ///     The writer to serialize to.
         /// </param>
         /// <param name="objects">
         ///     An IEnumerable of objects. 
@@ -40,7 +40,7 @@
         /// <param name="SerializationOptions">
         ///     Options for serialization. 
         /// </param>
-        public static void Serialize(Stream Output, object objects, CsvSerializationOptions SerializationOptions)
+        public static void Serialize(StreamWriter Writer, object objects, CsvSerializationOptions SerializationOptions)
         {
             IEnumerable<object> data = null;
 
@@ -133,10 +133,7 @@
                 builder.AppendLine(string.Join(SerializationOptions.Separator.ToString(), values.ToArray()));
             }
 
-            using (var Writer = new StreamWriter(Output, Encoding.UTF8, 1024, true))
-            {
-                Writer.Write(builder.ToString().Trim());
-            }
+            Writer.Write(builder.ToString().Trim());
         }
 
 
@@ -147,7 +144,7 @@
         ///     An IEnumerable of type T
         /// </returns>
         /// <param name="Input">Stream with CSV data.</param>
-        public static IEnumerable<T> Deserialize<T>(Stream Input) where T : class, new()
+        public static IEnumerable<T> Deserialize<T>(StreamReader Input) where T : class, new()
         {
             return Deserialize<T>(Input, new CsvDeserializationOptions());
         }
@@ -158,22 +155,24 @@
         /// <returns>
         ///     An IEnumerable of type T
         /// </returns>
-        /// <param name="Input">Stream with CSV data.</param>
-        /// <param name="DeserializationOptions">
-        ///     Options for deserialization. 
-        /// </param>
-        public static IEnumerable<T> Deserialize<T>(Stream Input, CsvDeserializationOptions DeserializationOptions) where T : class, new()
+        /// <param name="Reader">Reader with CSV data.</param>
+        /// <param name="DeserializationOptions"> Options for deserialization. </param>
+        public static IEnumerable<T> Deserialize<T>(StreamReader Reader, CsvDeserializationOptions DeserializationOptions) where T : class, new()
         {
             string[] Columns;
             string[] Rows;
 
             try
             {
-                using (var Reader = new StreamReader(Input))
-                {
-                    Columns = Reader.ReadLine().Split(DeserializationOptions.Separator);
-                    Rows = Reader.ReadToEnd().Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-                }
+
+                Columns = Reader
+                    .ReadLine()
+                    .Split(DeserializationOptions.Separator);
+
+                Rows = Reader
+                    .ReadToEnd()
+                    .Split(new string[] { Environment.NewLine }, StringSplitOptions.None)
+                ;
             }
             catch (Exception ex)
             {

@@ -1,39 +1,49 @@
 ﻿namespace Adrichem.Serialization.CsvSerializer.ExtensionMethods
 {
+    using System.Text;
     using System.IO;
     using Adrichem.Serialization.CsvSerializer;
     using System.Collections.Generic;
 
     public static class ExtensionMethods
     {
-        
+
         /// <summary>
-        /// Serializes <paramref name="Input"/> into <paramref name="Output"/>.
+        /// Serializes to a file.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="Input">The collection to serialize.</param>
-        /// <param name="Output">The output stream.</param>
+        /// <param name="Path">The output path.</param>
+        /// <param name="Encoding">The output Encoding.</param>
         /// <returns> <paramref name="Input"/></returns>
-        public static IEnumerable<T> CsvSerialize<T>(this IEnumerable<T> Input, Stream Output)
+        public static IEnumerable<T> CsvSerialize<T>(this IEnumerable<T> Input, string Path, Encoding Encoding)
         {
-            CsvSerializer.Serialize(Output, Input);
-            return Input;
+            using (var Writer = new StreamWriter(new FileStream(Path, FileMode.OpenOrCreate), Encoding))
+            {
+                CsvSerializer.Serialize(Writer, Input);
+                return Input;
+            }
         }
 
         /// <summary>
-        /// Serializes <paramref name="Input"/> into <paramref name="Output"/> using the options defines in <paramref name="Options"/>.
+        /// Serializes to a file.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="Input">The collection to serialize.</param>
-        /// <param name="Output">The output stream.</param>
+        /// <param name="Path">The output path.</param>
+        /// <param name="Encoding">The output Encoding.</param>
         /// <param name="Options">The options for serialization.</param>
         /// <returns> <paramref name="Input"/></returns>
         public static IEnumerable<T> CsvSerialize<T>(this IEnumerable<T> Input
-            , Stream Output
+            , string Path
+            , Encoding Encoding
             , CsvSerializationOptions Options)
         {
-            CsvSerializer.Serialize(Output, Input, Options);
-            return Input;
+            using (var Writer = new StreamWriter(new FileStream(Path, FileMode.OpenOrCreate), Encoding))
+            {
+                CsvSerializer.Serialize(Writer, Input, Options);
+                return Input;
+            }
         }
     }
 }
