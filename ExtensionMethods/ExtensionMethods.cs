@@ -18,7 +18,7 @@
         /// <returns> <paramref name="Input"/></returns>
         public static IEnumerable<T> CsvSerialize<T>(this IEnumerable<T> Input, string Path, Encoding Encoding)
         {
-            using (var Writer = new StreamWriter(new FileStream(Path, FileMode.OpenOrCreate), Encoding))
+            using (var Writer = new StreamWriter(new FileStream(Path, FileMode.Create), Encoding))
             {
                 CsvSerializer.Serialize(Writer, Input);
                 return Input;
