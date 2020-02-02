@@ -7,6 +7,7 @@
     using System.IO;
     using System.Text;
     using System.ComponentModel;
+    using System.Text.RegularExpressions;
 
     /// <summary>
     /// Serialize and deserialize CSV data.
@@ -156,18 +157,28 @@
         ///     An IEnumerable of type T
         /// </returns>
         /// <param name="Reader">Reader with CSV data.</param>
-        /// <param name="DeserializationOptions"> Options for deserialization. </param>
+        /// <param name="DeserializationOptions"> Options for deserialization.</param>
         public static IEnumerable<T> Deserialize<T>(StreamReader Reader, CsvDeserializationOptions DeserializationOptions) where T : class, new()
         {
+            
             string[] Columns;
             string[] Rows;
-
             try
             {
+               string FirstLine = Reader.ReadLine();
+               string HeaderLine;
+               if( Regex.IsMatch(FirstLine, "^sep=(.)$", RegexOptions.IgnoreCase))
+               {
+                    DeserializationOptions.Separator = FirstLine.Last();
+                    HeaderLine = Reader.ReadLine();
+               }
+               else
+                {
+                    HeaderLine = FirstLine;
+                }
 
-                Columns = Reader
-                    .ReadLine()
-                    .Split(DeserializationOptions.Separator);
+
+                Columns = HeaderLine.Split(DeserializationOptions.Separator);
 
                 Rows = Reader
                     .ReadToEnd()

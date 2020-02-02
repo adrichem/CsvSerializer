@@ -187,6 +187,73 @@ namespace Adrichem.Serialization.CsvSerializer.TestCsvSerializer
             Assert.Equal(12, Data.First().Date.Month);
             Assert.Equal(2018, Data.First().Date.Year);
         }
+
+        [Fact]
+        public void TestTextQualifier()
+        {
+             string tmp = string.Empty;
+            tmp += "Field1,Field2,intField,boolField" + Environment.NewLine;
+            tmp += "\"A\",\"B\",\"1\",\"False\"" + Environment.NewLine;
+            tmp += "\"C\",\"D\",\"2\",\"True\"" + Environment.NewLine;
+
+            var Input = StringToStreamReader(tmp);
+
+            var Data = CsvSerializer.Deserialize<HasFields>(Input, new CsvDeserializationOptions {  UseTextQualifier = true});
+            Assert.True(Data.Count() == 2);
+            Assert.Equal("A", Data.First().Field1);
+            Assert.Equal("B", Data.First().Field2);
+            Assert.Equal(1, Data.First().intField);
+            Assert.False(Data.First().boolField);
+            Assert.Equal("C", Data.Last().Field1);
+            Assert.Equal("D", Data.Last().Field2);
+            Assert.Equal(2, Data.Last().intField);
+            Assert.True(Data.Last().boolField);
+
+        }
+
+        /// <summary>
+        /// Verifies deserialisation when user specifies a non default separator.
+        /// </summary>
+        [Fact]
+        public void TestSeparatorsNonDefault()
+        {
+           var Reader = StringToStreamReader("Field1;Field2\n\"Hello\";\"World\"");
+           var Result = CsvSerializer.Deserialize<HasFields>(Reader , new CsvDeserializationOptions { Separator = ';', UseTextQualifier = true });
+            Assert.Single(Result);
+            Assert.Equal("Hello", Result.First().Field1);
+            Assert.Equal("World", Result.First().Field2);
+        }
+
+        /// <summary>
+        /// Verifies deserialisation when the file specifies the separator.
+        /// </summary>
+        [Fact]
+        public void TestSepartorHeaderLines()
+        {
+            var Reader = StringToStreamReader("sep=;\nField1;Field2\n\"Hello\";\"World\"");
+            var Options = new CsvDeserializationOptions { Separator = ';', UseTextQualifier = true };
+            var Result = CsvSerializer.Deserialize<HasFields>(Reader, Options);
+            Assert.Single(Result);
+            Assert.Equal("Hello", Result.First().Field1);
+            Assert.Equal("World", Result.First().Field2);
+            Assert.Equal(';'.ToString(), Options.Separator.ToString());
+        }
+
+
+        /// <summary>
+        /// Verifies deserialisation when user and file use different separators
+        /// </summary>
+        [Fact]
+        public void TestSepartorConflicting()
+        {
+            var Reader = StringToStreamReader("sep=,\nField1,Field2\n\"Hello\",\"World\"");
+            var Options = new CsvDeserializationOptions { Separator = ';', UseTextQualifier = true };
+            var Result = CsvSerializer.Deserialize<HasFields>(Reader, Options);
+            Assert.Single(Result);
+            Assert.Equal("Hello", Result.First().Field1);
+            Assert.Equal("World", Result.First().Field2);
+            Assert.Equal(','.ToString(), Options.Separator.ToString());
+        }
     }
  }
 
