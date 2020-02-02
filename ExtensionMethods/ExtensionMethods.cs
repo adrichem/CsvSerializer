@@ -39,7 +39,7 @@
             , Encoding Encoding
             , CsvSerializationOptions Options)
         {
-            using (var Writer = new StreamWriter(new FileStream(Path, FileMode.OpenOrCreate), Encoding))
+            using (var Writer = new StreamWriter(new FileStream(Path, FileMode.Create), Encoding))
             {
                 CsvSerializer.Serialize(Writer, Input, Options);
                 return Input;
